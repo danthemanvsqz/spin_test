@@ -1,0 +1,17 @@
+default: &default
+  adapter: postgis
+  encoding: unicode
+  host: db
+  username: docker 
+  password: docker 
+  pool: 5
+
+development:
+  <<: *default
+  database: myapp_development
+
+
+test:
+  <<: *default
+  database: myapp_test
+
