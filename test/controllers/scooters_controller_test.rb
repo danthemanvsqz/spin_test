@@ -20,4 +20,21 @@ class ScootersControllerTest < ActionDispatch::IntegrationTest
     assert @scooter.inactive
   end 
 
+  test "should post activate" do
+    @scooter.update!(inactive: true)
+    post "/scooters/activate", params: {ids: [@scooter.id]}
+    assert_response :success
+    @scooter.reload
+    assert_not @scooter.inactive
+  end
+
+  test "post activate should roll back when not found" do
+    @scooter.update!(inactive: true)
+    assert_raises(ActiveRecord::RecordNotFound) do
+      post "/scooters/activate", params: {ids: [@scooter.id, 2]}
+    end
+    @scooter.reload
+    assert @scooter.inactive
+  end
+
 end
