@@ -2,8 +2,8 @@ require 'test_helper'
 
 class ScootersControllerTest < ActionDispatch::IntegrationTest
   setup do
-    factory = RGeo::Cartesian.factory
-    @scooter = Scooter.find_or_create_by(location: factory.point(0,0), battery_level: 0, inactive: false)
+    @factory = RGeo::Cartesian.factory
+    @scooter = Scooter.find_or_create_by(location: @factory.point(0,0), battery_level: 0.5, inactive: false)
   end
 
   test "should put update" do
@@ -35,6 +35,18 @@ class ScootersControllerTest < ActionDispatch::IntegrationTest
     end
     @scooter.reload
     assert @scooter.inactive
+  end
+
+  test "get available scooters" do
+    spin_hq = @factory.point(-122.39867, 37.784)
+    museum = @factory.point(122.40117, 37.785587)
+    @scooter.update!(location: museum)
+    battery_low = Scooter.create!(location: museum, battery_level: 0.1, inactive: false)
+    inactive = Scooter.create!(location: museum, battery_level: 0.9, inactive: true)
+    get "/scooters/available", params: {latitude: spin_hq.y, longitude: spin_hq.x, radius: spin_hq.distance(museum) + 1} 
+    assert_response :success
+    results = JSON.parse(response.body)
+    assert results.size == 1
   end
 
 end
